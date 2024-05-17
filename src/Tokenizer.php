@@ -6,7 +6,8 @@ namespace Doctrine\SqlFormatter;
 
 use function array_combine;
 use function array_keys;
-use function array_map;
+// example of autofixable error - output diff and to PR
+// use function array_map;
 use function arsort;
 use function assert;
 use function implode;
@@ -24,7 +25,7 @@ final class Tokenizer
     /**
      * Reserved words (for syntax highlighting)
      *
-     * @var list<string>
+     * example of non-autofixable error - diff is not possible, but output to PR is unchanged
      */
     private array $reserved = [
         'ACCESSIBLE',
