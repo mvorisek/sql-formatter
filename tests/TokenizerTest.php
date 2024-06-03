@@ -18,6 +18,7 @@ use function array_filter;
 use function array_intersect;
 use function array_merge;
 use function array_unique;
+use function array_values;
 use function implode;
 use function preg_match;
 use function serialize;
@@ -1513,7 +1514,7 @@ final class TokenizerTest extends TestCase
     ];
 
     /**
-     * @param 'reserved'|'reservedToplevel'|'reservedNewline'|'functions' $propertyName
+     * @param 'reserved'|'nonreserved'|'reservedToplevel'|'reservedNewline'|'functions' $propertyName
      *
      * @return list<string>
      */
@@ -1531,6 +1532,7 @@ final class TokenizerTest extends TestCase
         foreach (
             [
                 $this->getTokenizerList('reserved'),
+                $this->getTokenizerList('nonreserved'),
                 $this->getTokenizerList('reservedToplevel'),
                 $this->getTokenizerList('reservedNewline'),
                 $this->getTokenizerList('functions'),
@@ -1554,6 +1556,7 @@ final class TokenizerTest extends TestCase
     {
         $tokenizerKeywords = array_unique(array_merge(
             $this->getTokenizerList('reserved'),
+            $this->getTokenizerList('nonreserved'),
             $this->getTokenizerList('functions'),
         ));
 
@@ -1568,6 +1571,7 @@ final class TokenizerTest extends TestCase
     {
         $tokenizerKeywords = array_merge(
             $this->getTokenizerList('reserved'),
+            $this->getTokenizerList('nonreserved'),
             $this->getTokenizerList('functions'),
         );
 
@@ -1595,13 +1599,14 @@ final class TokenizerTest extends TestCase
         );
     }
 
-    public function testKeywordsReservedMysqlAreReserved(): void
+    public function testKeywordsReservedAreStrictlyMysqlAndMariadbReserved(): void
     {
         $tokenizerReserved = $this->getTokenizerList('reserved');
 
-        $kwsDiff = array_diff(array_intersect(self::KEYWORDS_RESERVED_MYSQL, self::KEYWORDS_RESERVED_MARIADB), $tokenizerReserved);
-
-        self::assertSame([], $kwsDiff);
+        self::assertSame(
+            $tokenizerReserved,
+            array_values(array_intersect(self::KEYWORDS_RESERVED_MYSQL, self::KEYWORDS_RESERVED_MARIADB)),
+        );
     }
 
     /** @param list<Token> $expectedTokens */
