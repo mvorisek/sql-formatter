@@ -23,7 +23,9 @@ use function substr;
 final class Tokenizer
 {
     /**
-     * Reserved MySQL and MariaDB keywords
+     * Reserved MySQL and MariaDB keywords.
+     *
+     * All these keywords must be quoted.
      *
      * @var list<string>
      */
@@ -386,7 +388,7 @@ final class Tokenizer
      *
      * @var list<string>
      */
-    private array $reservedToplevel = [
+    private array $xxreservedToplevel = [
         'ADD',
         'ALTER TABLE',
         'CHANGE',
