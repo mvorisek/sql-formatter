@@ -750,6 +750,17 @@ final class TokenizerTest extends TestCase
         'ZEROFILL',
     ];
 
+    private const KEYWORDS_NONRESERVED_MYSQL = [
+        'AUTO_INCREMENT',
+        'CHARSET',
+        'ENGINE',
+        'ENGINE_TYPE',
+        'MODIFY',
+        'MODIFY',
+        'NAMES',
+        'TABLES',
+    ];
+
     /**
      * Based on https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/Oracle-SQL-Reserved-Words.html list.
      *
@@ -1539,6 +1550,7 @@ final class TokenizerTest extends TestCase
                 self::KEYWORDS_RESERVED_MARIADB,
                 self::KEYWORDS_RESERVED_MSSQL,
                 self::KEYWORDS_RESERVED_MYSQL,
+                self::KEYWORDS_NONRESERVED_MYSQL,
                 self::KEYWORDS_RESERVED_ORACLE,
                 self::KEYWORDS_RESERVED_POSTGRESQL,
                 self::KEYWORDS_RESERVED_SQL2023,
@@ -1617,6 +1629,7 @@ final class TokenizerTest extends TestCase
         ));
 
         self::assertSame([], array_diff(self::KEYWORDS_RESERVED_MYSQL, $tokenizerKeywords));
+        self::assertSame([], array_diff(self::KEYWORDS_NONRESERVED_MYSQL, $tokenizerKeywords));
         self::assertSame([], array_diff(self::KEYWORDS_RESERVED_MARIADB, $tokenizerKeywords));
         self::assertSame([], array_diff(self::KEYWORDS_RESERVED_SQLITE, $tokenizerKeywords));
     }
