@@ -1595,6 +1595,15 @@ final class TokenizerTest extends TestCase
         );
     }
 
+    public function testKeywordsReservedMysqlAreReserved(): void
+    {
+        $tokenizerReserved = $this->getTokenizerList('reserved');
+
+        $kwsDiff = array_diff(array_intersect(self::KEYWORDS_RESERVED_MYSQL, self::KEYWORDS_RESERVED_MARIADB), $tokenizerReserved);
+
+        self::assertSame([], $kwsDiff);
+    }
+
     /** @param list<Token> $expectedTokens */
     public static function assertEqualsTokens(array $expectedTokens, Cursor $cursor): void
     {
