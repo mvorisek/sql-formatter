@@ -1609,6 +1609,18 @@ final class TokenizerTest extends TestCase
         );
     }
 
+    public function testKeywordsContainAllMysqlMariadbAndSqliteKeywords(): void
+    {
+        $tokenizerKeywords = array_unique(array_merge(
+            $this->getTokenizerList('reserved'),
+            $this->getTokenizerList('nonreserved'),
+        ));
+
+        self::assertSame([], array_diff(self::KEYWORDS_RESERVED_MYSQL, $tokenizerKeywords));
+        self::assertSame([], array_diff(self::KEYWORDS_RESERVED_MARIADB, $tokenizerKeywords));
+        self::assertSame([], array_diff(self::KEYWORDS_RESERVED_SQLITE, $tokenizerKeywords));
+    }
+
     /** @param list<Token> $expectedTokens */
     public static function assertEqualsTokens(array $expectedTokens, Cursor $cursor): void
     {

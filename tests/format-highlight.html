@@ -918,7 +918,7 @@
     <span style="font-weight:bold;">GROUPS</span>
       <span style="font-weight:bold;">BETWEEN</span> <span style="font-weight:bold;">UNBOUNDED</span> <span style="font-weight:bold;">PRECEDING</span>
       <span style="font-weight:bold;">AND</span> <span style="font-weight:bold;">CURRENT</span> <span style="font-weight:bold;">ROW</span>
-      <span style="font-weight:bold;">EXCLUDE</span> <span style="color: #333;">NO</span> <span style="color: #333;">OTHERS</span>
+      <span style="font-weight:bold;">EXCLUDE</span> <span style="font-weight:bold;">NO</span> <span style="font-weight:bold;">OTHERS</span>
   ) <span style="font-weight:bold;">AS</span> <span style="color: #333;">no_others</span><span >,</span>
   <span style="font-weight:bold;">GROUP_CONCAT</span>(<span style="color: #333;">b</span><span >,</span> <span style="color: blue;">'.'</span>) <span style="font-weight:bold;">OVER</span> (
     <span style="font-weight:bold;">ORDER BY</span>
