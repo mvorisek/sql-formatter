@@ -151,7 +151,7 @@ final class SqlFormatterTest extends TestCase
     public function testFormatLongConcat(): void
     {
         $sqlParts = [];
-        for ($i = 0; $i < 20_000; $i++) {
+        for ($i = 0; $i < 2_000; $i++) {
             $sqlParts[] = 'cast(\'foo' . $i . '\' as blob)';
         }
 

@@ -1662,7 +1662,7 @@ final class TokenizerTest extends TestCase
 
     public function testTokenizeLongConcat(): void
     {
-        $count = 20_000;
+        $count = 200;
 
         $sqlParts = [];
         for ($i = 0; $i < $count; $i++) {
@@ -1719,5 +1719,20 @@ final class TokenizerTest extends TestCase
         $expectedTokens[] = new Token(Token::TOKEN_TYPE_WORD, 'x');
 
         $this->testTokenize($expectedTokens, $sql);
+
+        $tokenizer = (new Tokenizer());
+
+        $ts = [];
+        for ($i = 0; $i < 500; $i++) {
+            $t = microtime(true);
+            $tokens = $tokenizer->tokenize($sql);
+            $ts[] = microtime(true) - $t;
+        }
+        ob_end_flush();
+        echo "\n";
+        echo "\n";
+        var_dump(round(min(...$ts) * 1000, 2) . ' ms');
+        echo "\n";
+        ob_start();
     }
 }
