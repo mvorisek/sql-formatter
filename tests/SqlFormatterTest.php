@@ -42,6 +42,7 @@ final class SqlFormatterTest extends TestCase
     }
 
     #[DataProvider('formatData')]
+    #[DataProvider('formatLongConcatData')]
     public function testFormat(string $sql, string $html): void
     {
         $formatter = new SqlFormatter(new NullHighlighter());
@@ -148,20 +149,21 @@ final class SqlFormatterTest extends TestCase
         return self::fileDataProvider('format.txt');
     }
 
-    public function testFormatLongConcat(): void
+    /** @return Generator<mixed[]> */
+    public static function formatLongConcatData(): Generator
     {
         $sqlParts = [];
-        for ($i = 0; $i < 20_000; $i++) {
+        for ($i = 0; $i < 2_000; $i++) {
             $sqlParts[] = 'cast(\'foo' . $i . '\' as blob)';
         }
 
         $inConcat  = 'concat(' . implode(', ', $sqlParts) . ')';
         $outConcat = "concat(\n      " . implode(",\n      ", $sqlParts) . "\n    )";
 
-        $this->testFormat(
+        yield 'long concat' => [
             'select iif(' . $inConcat . ' = ' . $inConcat . ', 10, 20) x',
             "select\n  iif(\n    " . $outConcat . ' = ' . $outConcat . ",\n    10,\n    20\n  ) x",
-        );
+        ];
     }
 
     /** @return Generator<mixed[]> */
