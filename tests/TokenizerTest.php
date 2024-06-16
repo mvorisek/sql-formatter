@@ -1664,7 +1664,7 @@ final class TokenizerTest extends TestCase
     /** @return Generator<mixed[]> */
     public static function tokenizeLongConcatData(): Generator
     {
-        $count = 2_000;
+        $count = 20_000;
 
         $sqlParts = [];
         for ($i = 0; $i < $count; $i++) {
