@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Doctrine\SqlFormatter;
 
+use function array_flip;
 use function array_key_last;
+use function array_keys;
 use function array_map;
-use function array_pop;
 use function assert;
 use function count;
 use function implode;
 use function is_int;
+use function is_string;
 use function preg_match;
 use function preg_quote;
+use function preg_replace;
+use function preg_replace_callback;
 use function reset;
 use function str_replace;
 use function str_starts_with;
@@ -722,8 +726,12 @@ final class Tokenizer
         'YEARWEEK',
     ];
 
-    /** Regular expression for tokenizing. */
-    private readonly string $tokenizeRegex;
+    /**
+     * Regular expression for tokenizing.
+     *
+     * @var array{string, array<int, string>}
+     */
+    private readonly array $tokenizeRegex;
 
     /**
      * Punctuation that can be used as a boundary between other tokens
@@ -758,7 +766,9 @@ final class Tokenizer
      */
     public function __construct()
     {
-        $this->tokenizeRegex = $this->makeTokenizeRegex($this->makeTokenizeRegexes());
+        $regexes             = $this->makeTokenizeRegexes();
+        $regex               = $this->makeTokenizeRegex($regexes);
+        $this->tokenizeRegex = $this->removeNamedGroupsFromRegex($regex);
     }
 
     /**
@@ -887,7 +897,47 @@ final class Tokenizer
             $parts[] = '(?<t_' . $type . '>' . $regex . ')';
         }
 
-        return '~\G(?:' . implode('|', $parts) . ')~';
+        return '~\G(?>' . implode('|', $parts) . ')~';
+    }
+
+    /**
+     * Workaround slow PCRE named groups - https://github.com/php/php-src/issues/14423.
+     *
+     * Revert/remove once PHP 8.3 support is dropped.
+     *
+     * @return array{string, array<int, string>}
+     */
+    private function removeNamedGroupsFromRegex(string $regex): array
+    {
+        // make sure the original regex cannot be satisfied and append one unnamed capturing group
+        // to discover all named capturing groups
+        $regexForAnalysis = preg_replace('~^(.)(.*)(\1\w*$)~s', '$1(?:(?=1)0$2)|()$3', $regex);
+        assert($regexForAnalysis !== null);
+        preg_match($regexForAnalysis, '', $matches);
+        assert(count($matches) > 1);
+
+        $regexIndexToName = [];
+        $prevK            = null;
+        foreach (array_keys($matches) as $k) {
+            if (is_string($prevK)) {
+                $regexIndexToName[$k] = $prevK;
+            }
+
+            $prevK = $k;
+        }
+
+        // remap named groups to unnamed
+        $namedGroupsRegex        = '(?:' . implode('|', array_map(static fn ($v) => preg_quote($v, '~'), $regexIndexToName)) . ')';
+        $regexWithoutNamedGroups = preg_replace('~(?<=\()\?<' . $namedGroupsRegex . '>~', '', $regex);
+        assert($regexWithoutNamedGroups !== null);
+        $regexWithoutNamedGroups = preg_replace_callback(
+            '~(?<=\(\?)&' . $namedGroupsRegex . '(?=\))~',
+            static fn ($matches) => array_flip($regexIndexToName)[substr($matches[0], 1)],
+            $regexWithoutNamedGroups,
+        );
+        assert($regexWithoutNamedGroups !== null);
+
+        return [$regexWithoutNamedGroups, $regexIndexToName];
     }
 
     /**
@@ -906,17 +956,14 @@ final class Tokenizer
 
         while ($offset < strlen($string)) {
             // Get the next token and the token type
-            preg_match($tokenizeRegex, $upper, $matches, 0, $offset);
+            preg_match($tokenizeRegex[0], $upper, $matches, 0, $offset);
             assert(($matches[0] ?? '') !== '');
 
-            while (is_int($lastMatchesKey = array_key_last($matches))) {
-                array_pop($matches);
-            }
-
-            assert(str_starts_with($lastMatchesKey, 't_'));
+            $lastMatchesNamedGroup = $tokenizeRegex[1][array_key_last($matches)];
+            assert(str_starts_with($lastMatchesNamedGroup, 't_'));
 
             /** @var Token::TOKEN_TYPE_* $tokenType */
-            $tokenType = (int) substr($lastMatchesKey, 2);
+            $tokenType = (int) substr($lastMatchesNamedGroup, 2);
 
             $token = new Token($tokenType, substr($string, $offset, strlen($matches[0])));
 
